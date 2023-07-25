@@ -53,7 +53,7 @@ List<Employee> employees = new List<Employee> {
 
 
 List<ServiceTicket> serviceTickets = new List<ServiceTicket> {
-    new ServiceTicket
+               new ServiceTicket
                 {
                     Id = 1,
                     CustomerId = 1,
@@ -155,6 +155,14 @@ app.MapGet("/servicetickets/{id}", (int id) =>
     serviceTicket.Employee = employees.FirstOrDefault(e => e.Id == serviceTicket.EmployeeId);
     serviceTicket.Customer = customers.FirstOrDefault(cu => cu.Id == id);
     return Results.Ok(serviceTicket);
+});
+
+app.MapPost("/servicetickets", (ServiceTicket serviceTicket) =>
+{
+    // creates a new id (When we get to it later, our SQL database will do this for us like JSON Server did!)
+    serviceTicket.Id = serviceTickets.Max(st => st.Id) + 1;
+    serviceTickets.Add(serviceTicket);
+    return serviceTicket;
 });
 
 app.UseHttpsRedirection();
