@@ -108,6 +108,38 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapGet("/customer", () =>
+{
+    return customers;
+});
+
+app.MapGet("/customer/{id}", (int id) =>
+{
+    Customer customer = customers.FirstOrDefault(cu => cu.Id == id);
+    if (customer == null)
+    {
+        return Results.NotFound();
+    }
+    customer.ServiceTickets = serviceTickets.Where(st => st.CustomerId == id).ToList();
+    return Results.Ok(customer);
+});
+
+app.MapGet("/employee", () =>
+{
+    return employees;
+});
+
+app.MapGet("/employee/{id}", (int id) =>
+{
+    Employee employee = employees.FirstOrDefault(e => e.Id == id);
+    if (employee == null)
+    {
+        return Results.NotFound();
+    }
+    employee.ServiceTickets = serviceTickets.Where(st => st.EmployeeId == id).ToList();
+    return Results.Ok(employee);
+});
+
 app.MapGet("/servicetickets", () =>
 {
     return serviceTickets;
@@ -115,7 +147,14 @@ app.MapGet("/servicetickets", () =>
 
 app.MapGet("/servicetickets/{id}", (int id) =>
 {
-    return serviceTickets.FirstOrDefault(st => st.Id == id);
+    ServiceTicket serviceTicket = serviceTickets.FirstOrDefault(st => st.Id == id);
+    if (serviceTicket == null)
+    {
+        return Results.NotFound();
+    }
+    serviceTicket.Employee = employees.FirstOrDefault(e => e.Id == serviceTicket.EmployeeId);
+    serviceTicket.Customer = customers.FirstOrDefault(cu => cu.Id == id);
+    return Results.Ok(serviceTicket);
 });
 
 app.UseHttpsRedirection();
