@@ -136,7 +136,8 @@ app.MapGet("/employee/{id}", (int id) =>
     {
         return Results.NotFound();
     }
-    employee.ServiceTickets = serviceTickets.Where(st => st.EmployeeId == id).ToList();
+    employee.ServiceTickets = serviceTickets.Select(x => new ServiceTicket { CustomerId = x.CustomerId, EmployeeId = x.EmployeeId, DateCompleted = x.DateCompleted, Description = x.Description, Emergency = x.Emergency, Id = x.Id })
+   .Where(st => st.EmployeeId == id).ToList();
     return Results.Ok(employee);
 });
 
