@@ -166,6 +166,19 @@ app.MapPost("/servicetickets", (ServiceTicket serviceTicket) =>
     return serviceTicket;
 });
 
+app.MapDelete("/servicetickets/{id}", (int id) =>
+{
+    ServiceTicket serviceTicketToDelete = serviceTickets.FirstOrDefault(st => st.Id == id);
+    if(serviceTicketToDelete == null)
+    {
+        return Results.NotFound();
+    }
+
+    serviceTickets.Remove(serviceTicketToDelete);
+
+    return Results.NoContent();
+});
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
