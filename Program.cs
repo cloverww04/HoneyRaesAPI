@@ -241,6 +241,21 @@ app.MapGet("/unassignedemployees", () =>
     return Results.Ok(unassignedEmployees);
 });
 
+app.MapGet("/employee/{id}/customers", (int employeeId) =>
+{
+    Employee employee = employees.FirstOrDefault(e => e.Id == employeeId);
+    if (employee == null)
+    {
+        return Results.NotFound();
+    }
+
+    List<Customer> employeeCustomers = customers
+        .Where(cust => serviceTickets.Any(st => st.EmployeeId == employeeId && st.CustomerId == cust.Id))
+        .ToList();
+
+    return Results.Ok(employeeCustomers);
+});
+
 
 
 
