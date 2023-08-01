@@ -69,7 +69,7 @@ List<ServiceTicket> serviceTickets = new List<ServiceTicket> {
                     Description = "Ticket 2 Description",
                     Emergency = true,
                     // Leave EmployeeId unassigned (null).
-                    // Leave DateCompleted unassigned (null).
+                    DateCompleted = DateTime.Now.AddYears(-2)
                 },
                 new ServiceTicket
                 {
@@ -94,8 +94,8 @@ List<ServiceTicket> serviceTickets = new List<ServiceTicket> {
                     CustomerId = 2,
                     Description = "Ticket 5 Description",
                     Emergency = false,
-                    EmployeeId = null,
-                    DateCompleted = null
+                    EmployeeId = 3,
+                    DateCompleted = DateTime.Now.AddYears(-2)
                 }
 };
 
@@ -201,6 +201,55 @@ app.MapPost("/servicetickets/{id}/complete", (int id) =>
     ServiceTicket ticketToComplete = serviceTickets.FirstOrDefault(st => st.Id == id);
     ticketToComplete.DateCompleted = DateTime.Now;
 });
+
+app.MapGet("/emergencies", () => 
+{
+    List<ServiceTicket> emergencyTickets = serviceTickets.Where(st => st.Emergency && !st.DateCompleted.HasValue).ToList();
+
+    return Results.Ok(emergencyTickets);
+});
+
+app.MapGet("/unassigned", () => 
+{
+    List<ServiceTicket> unassignedTickets = serviceTickets.Where(st => st.EmployeeId == null).ToList();
+    return Results.Ok(unassignedTickets);
+});
+
+app.MapGet("/oldcustomers", () =>
+{
+    DateTime oneYearAgo = DateTime.Now.AddYears(-1);
+
+    List<Customer> oldCustomers = customers.Where(cust =>
+    {
+        List<ServiceTicket> customerTickets = serviceTickets
+            .Where(st => st.CustomerId == cust.Id && st.DateCompleted.HasValue && st.DateCompleted.Value >= oneYearAgo)
+            .ToList();
+
+        return customerTickets.Count == 0;
+    }).ToList();
+
+    return Results.Ok(oldCustomers);
+});
+
+app.MapGet("/unassignedemployees", () =>
+{
+    List<Employee> unassignedEmployees = employees.Where(emp =>
+    {
+        return !serviceTickets.Any(st => st.EmployeeId == emp.Id && !st.DateCompleted.HasValue);
+    }).ToList();
+
+    return Results.Ok(unassignedEmployees);
+});
+
+
+
+
+
+
+
+
+
+
 
 app.UseHttpsRedirection();
 
