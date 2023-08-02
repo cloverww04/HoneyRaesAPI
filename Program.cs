@@ -60,7 +60,7 @@ List<ServiceTicket> serviceTickets = new List<ServiceTicket> {
                     EmployeeId = 1,
                     Description = "Ticket 1 Description",
                     Emergency = false,
-                    DateCompleted = DateTime.Now.AddDays(2)
+                    DateCompleted = DateTime.Now.AddDays(-2)
                 },
                 new ServiceTicket
                 {
@@ -243,18 +243,44 @@ app.MapGet("/unassignedemployees", () =>
 
 app.MapGet("/employee/{id}/customers", (int employeeId) =>
 {
-    Employee employee = employees.FirstOrDefault(e => e.Id == employeeId);
+    var employee = employees.FirstOrDefault(e => e.Id == employeeId);
     if (employee == null)
     {
         return Results.NotFound();
     }
 
-    List<Customer> employeeCustomers = customers
-        .Where(cust => serviceTickets.Any(st => st.EmployeeId == employeeId && st.CustomerId == cust.Id))
-        .ToList();
+    List<Customer> employeeCustomers = customers.Where(cust => serviceTickets.Any(st => st.EmployeeId == employeeId && st.CustomerId == cust.Id)).ToList();
 
     return Results.Ok(employeeCustomers);
 });
+
+app.MapGet("/employeeofthemonth", () =>
+{
+    DateTime lastMonth = DateTime.Now.AddMonths(-1);
+
+    var employeeOfTheMonth = employees.OrderByDescending((Employee e) =>
+    {
+        return serviceTickets.Count((ServiceTicket st) =>
+            st.EmployeeId == e.Id && st.DateCompleted >= lastMonth);
+    }).FirstOrDefault();
+
+    return Results.Ok(employeeOfTheMonth);
+});
+
+app.MapGet("/completedtickets", () =>
+{
+    List<ServiceTicket> completedTickets = serviceTickets.Where(st => st.DateCompleted.HasValue).OrderBy(st => st.DateCompleted).ToList();
+
+    return Results.Ok(completedTickets);
+});
+
+app.MapGet("/incompletetickets", () => 
+{
+    List<ServiceTicket> incompleteTicket = serviceTickets.Where(st => !st.DateCompleted.HasValue).OrderByDescending(st => st.Emergency).ThenBy(st => st.EmployeeId == null).ToList();
+
+    return Results.Ok(incompleteTicket);
+});
+
 
 
 
