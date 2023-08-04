@@ -154,9 +154,10 @@ app.MapGet("/servicetickets/{id}", (int id) =>
         return Results.NotFound();
     }
     serviceTicket.Employee = employees.FirstOrDefault(e => e.Id == serviceTicket.EmployeeId);
-    serviceTicket.Customer = customers.FirstOrDefault(cu => cu.Id == id);
+    serviceTicket.Customer = customers.FirstOrDefault(cu => cu.Id == serviceTicket.CustomerId);
     return Results.Ok(serviceTicket);
 });
+
 
 app.MapPost("/servicetickets", (ServiceTicket serviceTicket) =>
 {
